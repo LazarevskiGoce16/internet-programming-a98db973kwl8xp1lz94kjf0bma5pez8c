@@ -61,12 +61,30 @@ const displayListOfEpisodes = (episodes) => {
     `;
     
     episodes.forEach(episode => {
+        let eraImage = "";
+        switch(episode.era) {
+            case "Classic":
+                eraImage = "../../images/classic.jpg";
+                break;
+            case "Modern":
+                eraImage = "../../images/modern.jpg";
+                break;
+            case "Recent":
+                eraImage = "../../images/recent.jpg";
+                break;
+            default:
+                eraImage = "../../images/classic.jpg";
+                break;
+        };
+
         const episodeRow = `
             <div class="episode-row">
                 <div class="episode-cell" data-sort="rank">${episode.rank}</div>
                 <div class="episode-cell" data-sort="name">${episode.title}</div>
                 <div class="episode-cell" data-sort="series">${episode.series}</div>
-                <div class="episode-cell" data-sort="era">${episode.era}</div>
+                <div class="episode-cell" data-sort="era">
+                    <img src="${eraImage}" alt="${episode.era} Era" class="era-image" style="width: 80px;"/>
+                </div>
                 <div class="episode-cell" data-sort="broadcast">${new Date(episode.broadcast_date).getFullYear()}</div>
                 <div class="episode-cell" data-sort="director">${episode.director}</div>
                 <div class="episode-cell" data-sort="writer">${episode.writer}</div>
@@ -104,10 +122,11 @@ const applyFilters = (data) => {
 const sortEpisodes = (data, key, order) => {
     return data.slice().sort((a, b) => {
         let valueA, valueB;
-        if (key === 'era') {
+
+        if (key === "era") {
             const eraOrder = { "Classic": 1, "Modern": 2, "Recent": 3 };
-            valueA = eraOrder[a.era];
-            valueB = eraOrder[b.era];
+            valueA = eraOrder[a.era] || 0;
+            valueB = eraOrder[b.era] || 0;
         } else if (key === "cast") {
             valueA = a.cast.length;
             valueB = b.cast.length;
@@ -115,13 +134,20 @@ const sortEpisodes = (data, key, order) => {
             valueA = new Date(a.broadcast_date).getFullYear();
             valueB = new Date(b.broadcast_date).getFullYear();
         } else if (key === "doctor") {
-            valueA = a.doctor.actor ? a.doctor.actor.toLowerCase() : '';
-            valueB = b.doctor.actor ? b.doctor.actor.toLowerCase() : '';
+            valueA = a.doctor.actor ? a.doctor.actor.toLowerCase() : "";
+            valueB = b.doctor.actor ? b.doctor.actor.toLowerCase() : "";
+        } else if (key === "name") {
+            valueA = a.title ? a.title.toLowerCase() : "";
+            valueB = b.title ? b.title.toLowerCase() : "";
+        } else if (key === "companion") {
+            valueA = a.companion && a.companion.actor ? a.companion.actor.toLowerCase() : "";
+            valueB = b.companion && b.companion.actor ? b.companion.actor.toLowerCase() : "";
         } else {
-            valueA = a[key] ? a[key].toString().toLowerCase() : '';
-            valueB = b[key] ? b[key].toString().toLowerCase() : '';
+            valueA = a[key] ? a[key].toString().toLowerCase() : "";
+            valueB = b[key] ? b[key].toString().toLowerCase() : "";
         }
-        return (valueA > valueB ? 1 : valueA < valueB ? -1 : 0) * (order === 'asc' ? 1 : -1);
+
+        return (valueA > valueB ? 1 : valueA < valueB ? -1 : 0) * (order === "asc" ? 1 : -1);
     });
 };
 
@@ -143,14 +169,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             const sortKey = header.dataset.sort;
             const currentOrder = header.dataset.order === "asc" ? "desc" : "asc";
             header.dataset.order = currentOrder;
+
             const sortedData = sortEpisodes(data, sortKey, currentOrder);
             displayListOfEpisodes(sortedData);
-            
-            if(currentOrder === "asc") {
-                console.log(`Sorting ${sortKey} in ascending order`);
-            } else {
-                console.log(`Sorting ${sortKey} in descending order`);
-            }
         });
     });
 });
