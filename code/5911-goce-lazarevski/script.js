@@ -43,23 +43,9 @@ const populateFilters = (data) => {
 };
 
 const displayListOfEpisodes = (episodes) => {
-    const episodesList = document.querySelector(".episodes-list");
-    episodesList.innerHTML = `
-        <div class="episodes-header">
-            <div class="header-cell" data-sort="rank">Rank</div>
-            <div class="header-cell" data-sort="name">Name</div>
-            <div class="header-cell" data-sort="series">Series</div>
-            <div class="header-cell" data-sort="era">Era</div>
-            <div class="header-cell" data-sort="broadcast">Broadcast Year</div>
-            <div class="header-cell" data-sort="director">Director</div>
-            <div class="header-cell" data-sort="writer">Writer</div>
-            <div class="header-cell" data-sort="doctor">Doctor</div>
-            <div class="header-cell" data-sort="companion">Companion</div>
-            <div class="header-cell" data-sort="cast">Cast</div>
-            <div class="header-cell" data-sort="plot">Plot</div>
-        </div>
-    `;
-    
+    const episodesList = document.querySelector("#episodes-container");    
+    let htmlString = "";
+
     episodes.forEach(episode => {
         let eraImage = "";
         switch(episode.era) {
@@ -76,6 +62,7 @@ const displayListOfEpisodes = (episodes) => {
                 eraImage = "../../images/classic.jpg";
                 break;
         };
+
 
         const episodeRow = `
             <div class="episode-row">
@@ -98,8 +85,9 @@ const displayListOfEpisodes = (episodes) => {
                 <div class="episode-cell plot-preview">${episode.plot}</div>
             </div>
         `;
-        episodesList.innerHTML += episodeRow;
+        htmlString += episodeRow;
     });
+    episodesList.innerHTML = htmlString;
 };
 
 const applyFilters = (data) => {
@@ -118,6 +106,8 @@ const applyFilters = (data) => {
     
     displayListOfEpisodes(filteredEpisodes);
 };
+
+let ascending = true;
 
 const sortEpisodes = (data, key, order) => {
     return data.slice().sort((a, b) => {
@@ -151,18 +141,8 @@ const sortEpisodes = (data, key, order) => {
     });
 };
 
-
-
-document.addEventListener("DOMContentLoaded", async () => {
+const attachSortHandlers = async () => {
     const data = await fetchData();
-    displayListOfEpisodes(data);
-    populateFilters(data);
-    
-    document.querySelector("#name-filter").addEventListener("input", () => applyFilters(data));
-    document.querySelector("#era-filter").addEventListener("change", () => applyFilters(data));
-    document.querySelector("#doctor-filter").addEventListener("change", () => applyFilters(data));
-    document.querySelector("#companion-filter").addEventListener("change", () => applyFilters(data));
-    
     document.querySelectorAll(".header-cell").forEach(header => {
         header.dataset.order = "asc";
         header.addEventListener("click", () => {
@@ -174,4 +154,17 @@ document.addEventListener("DOMContentLoaded", async () => {
             displayListOfEpisodes(sortedData);
         });
     });
+};
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const data = await fetchData();
+    displayListOfEpisodes(data);
+    populateFilters(data);
+    
+    document.querySelector("#name-filter").addEventListener("input", () => applyFilters(data));
+    document.querySelector("#era-filter").addEventListener("change", () => applyFilters(data));
+    document.querySelector("#doctor-filter").addEventListener("change", () => applyFilters(data));
+    document.querySelector("#companion-filter").addEventListener("change", () => applyFilters(data));
+
+    attachSortHandlers();
 });
